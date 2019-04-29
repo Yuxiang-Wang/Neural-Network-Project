@@ -6,7 +6,7 @@
 int main(){
     MatrixXd test_input(MatrixXd::Random(10,3));
     MatrixXd test_output;
-    test_output=(test_input.rowwise().sum().array()<1).cast<double>();
+    test_output=(test_input.rowwise().sum().array()<0).cast<double>();
     
     Neural_network nn(3,3,3,1);
     nn.set_data_input(test_input);
