@@ -31,8 +31,7 @@ class Neural_network{
 	diff_total: sum of derivative of all observers.
 	*/
     const int num_layer,units_hidden,units_output,units_input;
-    //std::vector<MatrixXd> w,diff,delta,val,diff_total;
-	std::vector<Layer> layers;
+    std::vector<Layer> layers;
     float learning_rate=100;
     const int MAX_ITE=100000;
     MatrixXd data_input,data_output;
