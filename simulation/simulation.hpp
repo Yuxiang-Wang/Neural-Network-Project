@@ -27,6 +27,12 @@ double N(double x);
 double BSM_euro_call(double S,double K,double r,double vol, double d,double t);
 
 //Can be modulized and hold different simulation samples
-void simulation(const MatrixXd *inputs, const VectorXf *output, double simLen);
+void simulation(const MatrixXd *inputs, const VectorXd *output, double simLen);
+/*
+ @brief simulate the stock paths and get input and ouput for neural network training
+ @param pre-defined Eigen object to hold inputs for the neural network: S,K,r,vol,d,tau
+ @param pre-defined Eigen object to hold ouputs for the neural network: BS option prices
+ @param simulation time length
+ */
 
 #endif /* simulation_hpp */

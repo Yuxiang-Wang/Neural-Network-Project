@@ -13,7 +13,7 @@ double d1(double S,double K,double r,double vol,double d,double t){
     return (log(S/K)+(r-d+0.5*vol*vol)*t)/(vol*sqrt(t));
 }
 
-double d2(double S,double K,double r,double vol,double d,double t){//func d1_func,
+double d2(double S,double K,double r,double vol,double d,double t){
     double temp=d1(S, K, r, vol, d, t);
     return temp-vol*sqrt(vol);
 }
@@ -31,11 +31,12 @@ double BSM_euro_call(double S,double K,double r,double vol,double d,double t){
 }
 
 
-void simulation(MatrixXd &inputs, VectorXf &output, const double &simLen, double S0,double K,double r,double vol0,double d){
+void simulation(MatrixXd &inputs, VectorXd &output, const double &simLen, double S0,double K,double r,double vol0,double d){
     
     /*Employing the boost library to set the seed and random number generator through standard normal distribution, to get the numbers for simulating the stock prices path of length simlen. Parameters for inputs (S,K,r,vol0,d,tau) for neural network training would be set. And the output which is the price path of the euro call option would be set too. In this version, the K,d,r,vol are fixed. Untested since my xcode isn't able to compile Eigen lib.
      */
     
+    /*=====================================Set up the random number series randy=====================================*/
     std::vector<double>randy;
     boost::mt19937 *rng=new boost::mt19937();
     rng->seed(10);
@@ -47,6 +48,7 @@ void simulation(MatrixXd &inputs, VectorXf &output, const double &simLen, double
         randy.push_back(temp);
     }
     
+    /*============================Initialize parameters and temporary data holders===================================*/
     double S=S0;
     double T=1.0/252.0;
     double tau=T;
@@ -54,6 +56,8 @@ void simulation(MatrixXd &inputs, VectorXf &output, const double &simLen, double
     int periods=(int) (simLen/T);
     std::vector<double>in;
     std::vector<double>out;
+    
+    /*======================================The stock price simulation body===========================================*/
     
     for (int i=1; i<periods+1; ++i) {
         std::vector<double> temp{S,K,r,vol0,d,tau};
@@ -67,12 +71,15 @@ void simulation(MatrixXd &inputs, VectorXf &output, const double &simLen, double
         
     }
     
-    MatrixXd InTemp=Map<MatrixXd>(in.data(),in.size());
-    InTemp.resize(6, periods);//rows means S,K,r,vol0,d,tau; cols means different days data
-    inputs=InTemp;
+    /*=====================Load and resize the inputs and ouputs for neural network training==========================*/
+
+    double *data_ptr1=&in[0];
+    double *data_ptr2=&out[0];
     
-    VectorXd OutTemp=Map<VectorXd>(out.data(),out.size());
-    output=OutTemp;
+    inputs=Map<MatrixXd>(data_ptr1,6,periods);//rows means S,K,r,vol0,d,tau; cols means different days data
+    //inputs.resize(6, periods);
+    
+    output=Map<VectorXd>(data_ptr2,periods);
     
 }
 
