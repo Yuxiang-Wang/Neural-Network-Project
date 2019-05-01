@@ -1,4 +1,5 @@
 Log:
+
 4/23/2019
 Two available topics:
 
