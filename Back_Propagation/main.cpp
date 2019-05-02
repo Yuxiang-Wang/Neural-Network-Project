@@ -33,38 +33,6 @@ int main(){
 	std::cout << '\n' << comp << "\n\n"
 		<< (comp.col(0).array() == comp.col(1).array()) << "\n\n";
 
-	//std::cout << "compute derivative numerically:\n";
-	//for (auto it = weight.begin(); it != weight.end(); ++it) {
-	//	for (int i = 0; i < (*it).rows(); ++i) {
-	//		for (int j = 0; j < (*it).cols(); ++j) {			
-	//			double cost1, cost2;
-	//			(*it)(i, j) += 0.001;
-	//			nn.set_weight(weight);
-	//			nn.forward(test_input.row(0));
-	//			cost1 = cost_func(test_output.row(0),nn.get_val());
-	//			(*it)(i, j) -= 0.002;
-	//			nn.set_weight(weight);
-	//			nn.forward(test_input.row(0));
-	//			cost2 = cost_func(test_output.row(0), nn.get_val());
-	//			std::cout << (cost1 - cost2) / 0.002 << ", ";
-	//			(*it)(i, j) += 0.001;
-	//			
-	//		}
-	//		std::cout << '\n';
-	//	}
-	//	std::cout << "\n\n";
-	//}
-	//
-	//nn.set_weight(weight);
-	//nn.forward(test_input.row(0));
-	//nn.backward(test_output.row(0));
-	//auto l = nn.get_layers();
-
-	//std::cout << "derivative in the model\n";
-	//for (auto& e : l) {
-	//	std::cout << e.diff << "\n\n";
-	//}
-
 	getchar();
 	getchar();
     return 0;
