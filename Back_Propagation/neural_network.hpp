@@ -17,37 +17,37 @@ struct Layer {
 	Layer(MatrixXd w, MatrixXd diff, MatrixXd diff_total, MatrixXd val, MatrixXd delta);
 };
 
-class Neural_network{
+class Neural_network {
 	/*
 	All the hidden layers have same units number in the model.
-	Didn't use neuron structure. w, diff, diff_total are matrice, need numbers of units of two layers to initialize. 
+	Didn't use neuron structure. w, diff, diff_total are matrice, need numbers of units of two layers to initialize.
 	Set delta,val,diff as private class member just for convenience. save memory.
-	
+
 	delta: expected value - real output
 	val: expected value
 	diff: derivatives
-	
-	w:weights; 
+
+	w:weights;
 	diff_total: sum of derivative of all observers.
 	*/
 
-    const int num_layer,units_hidden,units_output,units_input;
+	const int num_layer, units_hidden, units_output, units_input;
 	std::vector<Layer> layers;
-    float learning_rate=0.1;
-    const int MAX_ITE=100000;
-    MatrixXd data_input,data_output;
+	float learning_rate = 0.1;
+	const int MAX_ITE = 100000;
+	MatrixXd data_input, data_output;
 
 public:
-    Neural_network(int num_layer,int units_input,int units_hidden,int units_output);
-    void set_data_input(const MatrixXd& m);
-    void set_data_output(const MatrixXd& m);
-    void set_weight(const std::vector<MatrixXd>& weight);	//set weight manualy
-    MatrixXd get_val() const;	//get expected output
+	Neural_network(int num_layer, int units_input, int units_hidden, int units_output);
+	void set_data_input(const MatrixXd& m);
+	void set_data_output(const MatrixXd& m);
+	void set_weight(const std::vector<MatrixXd>& weight);	//set weight manualy
+	MatrixXd get_val() const;	//get expected output
 	std::vector<Layer> get_layers() const;
 	void forward(MatrixXd input);							//feed forward, compute expected output
-    void backward(MatrixXd output);							//backward compute derivative
-    void update();											//update weights	
-    void training(std::string file="");						//main work, train network
+	void backward(MatrixXd output);							//backward compute derivative
+	void update();											//update weights	
+	void training(std::string file = "");						//main work, train network
 };
 
 #endif

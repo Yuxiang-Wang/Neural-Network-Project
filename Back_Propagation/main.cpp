@@ -4,21 +4,21 @@
 #include<vector>
 using namespace Eigen;
 
-int main(){
-
-	MatrixXd test_input(MatrixXd::Random(100, 20));
-    MatrixXd test_output=(test_input.rowwise().sum().array()<0).cast<double>();
+int main() {
+	int units_hidden = 10, num_layer = 4, units_input = 20, units_output = 1;
+	MatrixXd test_input(MatrixXd::Random(100, units_input));
+	MatrixXd test_output = (test_input.rowwise().sum().array() < 0).cast<double>();
 
 	std::vector<MatrixXd> weight;
-	int units_hidden = 10, num_layer = 4, units_input = 20, units_output = 1;
+
 	weight.push_back(MatrixXd::Random(units_hidden, units_input + 1));
 	for (int i = 1; i < num_layer - 2; ++i)
 		weight.push_back(MatrixXd::Random(units_hidden, units_hidden + 1));
 	weight.push_back(MatrixXd::Random(units_output, units_hidden + 1));
 
-    Neural_network nn(num_layer,units_input,units_hidden,units_output);
-    nn.set_data_input(test_input);
-    nn.set_data_output(test_output);
+	Neural_network nn(num_layer, units_input, units_hidden, units_output);
+	nn.set_data_input(test_input);
+	nn.set_data_output(test_output);
 	nn.set_weight(weight);
 	nn.training("wights.txt");
 
@@ -35,5 +35,5 @@ int main(){
 
 	getchar();
 	getchar();
-    return 0;
+	return 0;
 }
