@@ -1,9 +1,17 @@
 #include"neural_network.hpp"
 
 double sigmoid(double x) {
-	return 1 / (1 + exp(x));
+	return 1 / (1 + exp(-x));
 }
 
+double cost_func(MatrixXd output, const MatrixXd& x) {
+	output = Map<MatrixXd>(output.data(), output.size(), 1);
+	double j = 0;
+	for (int i = 0; i < output.size(); ++i) {
+		j += -(output(i, 0)*log(x(i, 0)) + (1 - output(i, 0))*log(1 - x(i, 0)));
+	}
+	return j;
+}
 Layer::Layer(MatrixXd w, MatrixXd diff, MatrixXd diff_total, MatrixXd val, MatrixXd delta)
 	:w(w), diff(diff), delta(delta), val(val), diff_total(diff_total) {}
 
@@ -78,6 +86,10 @@ MatrixXd Neural_network::get_val() const {
 	return layers.back().val;
 }
 
+std::vector<Layer> Neural_network::get_layers() const {
+	return layers;
+}
+
 void Neural_network::forward(MatrixXd input) {
 	// exceptional handling for input layer and output layer
 	layers[0].val << MatrixXd::Ones(1, 1)*0.1, Map<MatrixXd>(input.data(), units_input, 1);
@@ -92,16 +104,19 @@ void Neural_network::backward(MatrixXd output) {
 	// exceptional handling for output layer
 	output = Map<MatrixXd>(output.data(), units_output, 1);
 	layers.back().delta = layers.back().val - output;
+	auto it = layers.rbegin() + 1;
+	(*it).delta = ((*it).w.transpose()*(*(it - 1)).delta).array()*
+		(*it).val.array()*(MatrixXd::Ones(units_hidden + 1, 1) - (*it).val).array();
 
-	for (auto it = layers.rbegin() + 1; it != layers.rend() - 1; ++it) {
-		(*it).delta = ((*it).w.transpose()*(*(it - 1)).delta).array()*
+	for (++it; it != layers.rend() - 1; ++it) {
+		(*it).delta = ((*it).w.transpose()*(*(it - 1)).delta.block(1,0,units_hidden,1)).array()*
 			(*it).val.array()*(MatrixXd::Ones(units_hidden + 1, 1) - (*it).val).array();
 	}
 
 	// diff
 	// exceptional handling for input layer and output layer
 	// transform MatrixXd to VectorXd to do outer product. didn't find a way to do it using MatrixXd
-	auto it = layers.rbegin() + 1;
+	it = layers.rbegin() + 1;
 	VectorXd delta_vec(Map<VectorXd>(layers.back().delta.data(), layers.back().delta.rows()));
 	VectorXd val_vec(Map<VectorXd>((*it).val.data(), (*it).val.rows()));
 	(*it).diff = delta_vec * val_vec.transpose();
@@ -115,30 +130,40 @@ void Neural_network::backward(MatrixXd output) {
 
 void Neural_network::update() {
 	for (auto it = layers.begin(); it != layers.end() - 1; ++it) {
-		(*it).w += learning_rate * (*it).diff_total;
+		(*it).w -= learning_rate * (*it).diff_total;
 	}
 }
 
 void Neural_network::training(std::string file) {
 	int num = data_input.rows();
 
+	double cost=1e5, cost_last;
 	for (int ite = 0; ite < MAX_ITE; ++ite) {
 		for (auto it = layers.begin(); it != layers.end() - 1; ++it)
 			(*it).diff_total.setZero();
 
+		cost_last = cost;
+		cost = 0;
 		for (int i = 0; i < num; ++i) {
 			forward(data_input.row(i));
 			backward(data_output.row(i));
 			for (auto it = layers.begin(); it != layers.end() - 1; ++it)
 				(*it).diff_total += (*it).diff;
+			cost += cost_func(data_output.row(i), layers.back().val);
 		}
+		//for (auto it = layers.begin(); it != layers.end() - 1; ++it)
+		//	(*it).diff_total /= num;
+		//cost /= num;
 
 		// exit by checking value of derivative
+		/*
 		double max_diff = 0;
 		for (auto it = layers.begin(); it != layers.end() - 1; ++it) {
 			max_diff = (*it).diff_total.array().abs().maxCoeff() > max_diff ? (*it).diff_total.array().abs().maxCoeff() : max_diff;
 		}
-		if (max_diff*learning_rate < 0.001) {
+		*/
+		
+		if (abs(cost-cost_last) < 0.0001) {
 			std::cout << "\ntraining done, total iteration " << ite << '\n';
 			return;
 		}
@@ -147,8 +172,8 @@ void Neural_network::training(std::string file) {
 		// output for showing progress
 		// output to file for store training results. 
 		// don't need to re-train again incase slow converging for large scale data set
-		if (!(ite % (MAX_ITE / 50))) {
-			std::cout << ite << ", ";
+		if (!(ite % 10)) {
+			std::cout << ite << ", "<<"cost: "<<cost<<'\n';
 			if (file.length()) {
 				std::ofstream outfile(file);
 				if (outfile.fail()) {
