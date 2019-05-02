@@ -28,7 +28,7 @@ class BSM{
     double r;
     double vol;
     double d;
-    double t; //means simulation length, but is tau when instantiated in bsm function call
+    double t;
     
     BSM():S0{0},K{0},r{0},vol{0},d{0},t{0}{}
     BSM(const double &s,const double &k,const double &rfr,const double &volatility,const double &div,const double &len):S0{s},K{k},r{rfr},vol{volatility},d{div},t{len}{}
@@ -50,21 +50,29 @@ class BSM{
 class simulation{
     public:
     BSM Initial_set;
+    //simulation length size in years
     double simLen;
+    //window size in days
+    int window_size;//cant be larger than simlen*252, exception handling here
     double seed_;
     double mean_;
     double stdev_;
-    //VectorXd St;
+
+    MatrixXd St;
+    MatrixXd TAU;
+    MatrixXd vol_d;
     VectorXd Option_val;
     MatrixXd input;
     
-    simulation():Initial_set(BSM()),simLen{0},seed_{108},mean_{0},stdev_{1}{}
-    simulation(const BSM &A,const double &t,const double &seed,const double &mean, const double &stdev):Initial_set{A},simLen{t},seed_{seed},mean_{mean},stdev_{stdev}{}
+    simulation():Initial_set(BSM()),simLen{0},window_size{0},seed_{108},mean_{0},stdev_{1}{}
+    simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev):Initial_set{A},simLen{t},window_size{win},seed_{seed},mean_{mean},stdev_{stdev}{}
     
     void setBSM(const BSM& s){Initial_set=s;}
     void setLen(const double& l){simLen=l;}
     
-    //const VectorXd getSt() const {return St;}
+    const MatrixXd getSt() const {return St;}
+    const MatrixXd getTAU() const {return TAU;}
+    const MatrixXd getV_d() const {return vol_d;}
     const VectorXd getOpt() const {return Option_val;}
     const MatrixXd getInput() const {return input;}
     
@@ -77,6 +85,11 @@ class simulation{
      */
     
     void Norm_gen(vector<double> &,const double &);
+    /*
+     @brief generates certain number of number according to normal distribution
+     @param vector that stores the numbers
+     @param the number of periods
+     */
     
     void simulate();
     /*

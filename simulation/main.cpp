@@ -8,37 +8,45 @@
 
 #include <iostream>
 #include "simulation.hpp"
+#include "io_simulation.hpp"
 
 int main() {
     
     BSM Q(90,100,0.0001,0.3,0.0015,1);//make a BSM object
     
-    simulation yy(Q,1,108,0,1);//take the object as initial set of values for simulation, and specify the simulation length
+    simulation yy(Q,1,30,108,0,1);//take the object as initial set of values for simulation, and specify simulation length,window size,random seed, mean and stdev for the normal dist
     
     yy.simulate();//simulate, so that the input
     MatrixXd input=yy.getInput();//get the input and output for the neural network training
     VectorXd output=yy.getOpt();
-    //cout<<output<<endl;
     
-    /*std::ofstream file("simulated_input.csv");
-    if (file.fail()){
-        cerr<<"Fail to create file for writing"<<"\n";
-        return -1;
-    }
+    //set the format of streaming out the matrix/vector
+    IOFormat csvFormat_mat(StreamPrecision, 0, ", ", "\n", "", "", "", "");
+    IOFormat csvFormat_vec(StreamPrecision, 0, ", ", ", ", "", "", "", "");
     
-    file<<input<<endl;
+    writeIn(input, "simulated_input.csv", csvFormat_mat);
     
-    file.close();
+    writeIn(output, "simulated_output_option_price.csv", csvFormat_vec);
     
-    std::ofstream file1("simulated_output_option_price.csv");
-    if (file1.fail()){
-        cerr<<"Fail to create file for writing"<<"\n";
-        return -1;
-    }
+    MatrixXd St=yy.getSt();
+    MatrixXd TAU=yy.getTAU();
+    MatrixXd Vol_d=yy.getV_d();
     
-    file1<<output<<endl;*/
+    writeIn(yy.getSt(), "input_S.csv", csvFormat_mat);
+    writeIn(yy.getTAU(), "input_TAU.csv", csvFormat_mat);
+    writeIn(yy.getV_d(), "input_Vol&d.csv", csvFormat_mat);
     
+    MatrixXd AA;
+    MatrixXd BB;
+    MatrixXd CC;
     
+    matRead(AA, "input_S.csv");
+    matRead(BB, "input_TAU.csv");
+    matRead(CC, "input_Vol&d.csv");
+    
+    cout<<AA.rows()<<' '<<AA.cols()<<endl;
+    cout<<BB.rows()<<' '<<BB.cols()<<endl;
+    cout<<CC.rows()<<' '<<CC.cols()<<endl;
     
     return 0;
 }

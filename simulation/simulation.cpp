@@ -104,24 +104,43 @@ void simulation::simulate(){
     
     /*=====================Load and resize the inputs and ouputs for neural network training==========================*/
     
-    for (int i=31; i<periods+1; ++i) {
-        int j=i-31;
-        in.insert(in.end(),S_holder.begin()+j,S_holder.begin()+j+30);
-        in.insert(in.end(),tau_holder.begin()+j,tau_holder.begin()+j+31);
+    vector<double>St_;
+    vector<double>TAU_;
+    vector<double>vd_;
+    
+    for (int i=window_size+1; i<periods+1; ++i) {
+        int j=i-window_size-1;
+        in.insert(in.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);
+        in.insert(in.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);
         in.push_back(vol0);
         in.push_back(d);
         in.push_back(K);
+        St_.insert(St_.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);
+        TAU_.insert(TAU_.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);
+        vd_.push_back(vol0);
+        vd_.push_back(d);
+        vd_.push_back(K);
         //cout<<in.size()<<endl;
     }
     
-    out.insert(out.end(),V_holder.begin()+30,V_holder.end());
+    out.insert(out.end(),V_holder.begin()+window_size,V_holder.end());
     
+    /*========================================Get the general outcomes================================================*/
     double *data_ptr1=&in[0];
     double *data_ptr2=&out[0];
     
-    input=Eigen::Map<MatrixXd>(data_ptr1,64,periods-30);//rows means S,K,r,vol0,d,tau; cols means different days data
+    input=Eigen::Map<MatrixXd>(data_ptr1,window_size*2+4,periods-window_size);//rows means S,K,r,vol0,d,tau; cols means different days data
     //inputs.resize(5, periods);
+    Option_val=Eigen::Map<VectorXd>(data_ptr2,periods-window_size);
     
-    Option_val=Eigen::Map<VectorXd>(data_ptr2,periods-30);
+    /*=====================Get the specific outcomes S,TAU,vol and dividend, 3 matricies total========================*/
+    double *S_ptr=&St_[0];
+    double *TAU_ptr=&TAU_[0];
+    double *VD_ptr=&vd_[0];
+    
+    St=Eigen::Map<MatrixXd>(S_ptr,window_size,periods-window_size);
+    TAU=Eigen::Map<MatrixXd>(TAU_ptr,window_size+1,periods-window_size);
+    vol_d=Eigen::Map<MatrixXd>(VD_ptr,3,periods-window_size);
     
 }
+
