@@ -37,7 +37,7 @@ public:
 };
 
 template <typename Derived>
-void writeIn(const Derived &mat,const string &filename,IOFormat &form) {
+void writeIn(const MatrixBase<Derived> &mat,const string &filename,IOFormat &form) {
     ofstream file;
     
     try {

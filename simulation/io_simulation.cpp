@@ -39,7 +39,7 @@ int matRead(MatrixXd &A,const string &filename){
     }
     
     double *data_ptr=&temp[0];
-    A=Eigen::Map<MatrixXd>(data_ptr,row,col).transpose();
+    A=Eigen::Map<MatrixXd>(data_ptr,col,row).transpose();
     
     infile.close();
     return 0;

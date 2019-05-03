@@ -47,6 +47,11 @@ class BSM{
     
 };
 
+class simException:public exception{
+public:
+    virtual const char* what(){return "Error: Window size can't be bigger than number of years (simulation length)*252";}
+};
+
 class simulation{
     public:
     BSM Initial_set;
@@ -62,10 +67,19 @@ class simulation{
     MatrixXd TAU;
     MatrixXd vol_d;
     VectorXd Option_val;
+    
+    VectorXd opt252;
+    VectorXd S252;
+    VectorXd TAU252;
+    VectorXd VOL_D_K252;
+    
     MatrixXd input;
     
     simulation():Initial_set(BSM()),simLen{0},window_size{0},seed_{108},mean_{0},stdev_{1}{}
-    simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev):Initial_set{A},simLen{t},window_size{win},seed_{seed},mean_{mean},stdev_{stdev}{}
+    //simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev):Initial_set{A},simLen{t},window_size{win},seed_{seed},mean_{mean},stdev_{stdev}{}
+    
+    simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev);
+    
     
     void setBSM(const BSM& s){Initial_set=s;}
     void setLen(const double& l){simLen=l;}
@@ -84,7 +98,7 @@ class simulation{
      @param simulation class object
      */
     
-    void Norm_gen(vector<double> &,const double &);
+    void Norm_gen(vector<double> &,const double &);//maybe just make it a template class
     /*
      @brief generates certain number of number according to normal distribution
      @param vector that stores the numbers

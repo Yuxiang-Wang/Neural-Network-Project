@@ -8,6 +8,21 @@
 
 #include "simulation.hpp"
 
+simulation::simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev){
+    if (win>252*t) {
+        simException d;
+        cerr<<d.what()<<endl;
+        exit(-1);
+    }
+    
+    Initial_set=A;
+    simLen=t;
+    window_size=win;
+    seed_=seed;
+    mean_=mean;
+    stdev_=stdev;
+}
+
 BSM::~BSM(){}
 
 double BSM::d1(){
@@ -43,7 +58,7 @@ ostream& operator << (ostream& os,  simulation& l){
     return os;
 };
 
-void simulation::Norm_gen(vector<double> & randy,const double &periods){
+void simulation::Norm_gen(vector<double> & randy,const double &number_of_randn){
     /*==================================Set up the random number engine and seed======================================*/
     boost::mt19937 *rng=new boost::mt19937();
     rng->seed(seed_);
@@ -53,7 +68,7 @@ void simulation::Norm_gen(vector<double> & randy,const double &periods){
     
     /*=================================Set up the random normal number-generator======================================*/
     boost::variate_generator<boost::mt19937, boost::normal_distribution<>> dist(*rng,norm);
-    for (int i=0; i<2*periods; ++i) {
+    for (int i=0; i<number_of_randn; ++i) {
         double temp=dist();
         
         randy.push_back(temp);
@@ -84,9 +99,9 @@ void simulation::simulate(){
     std::vector<double>tau_holder;
     std::vector<double>V_holder;
     
-    /*=====================================Set up the random normal series randy======================================*/
+    /*==================================Set up the random normal series randy=========================================*/
     std::vector<double>randy;
-    Norm_gen(randy, periods);
+    Norm_gen(randy, 2*periods);
     
     /*======================================The stock price simulation body===========================================*/
     
@@ -98,11 +113,12 @@ void simulation::simulate(){
         
         BSM tempPrice(S,K,r,vol0,d,tau);
         double Vtemp=tempPrice.BSM_euro_call();
+        //cout<<Vtemp<<endl;
         V_holder.push_back(Vtemp);
         //out.push_back(Vtemp);
     }
     
-    /*=====================Load and resize the inputs and ouputs for neural network training==========================*/
+    /*===================Load and resize the inputs and ouputs for neural network training============================*/
     
     vector<double>St_;
     vector<double>TAU_;
@@ -115,32 +131,38 @@ void simulation::simulate(){
         in.push_back(vol0);
         in.push_back(d);
         in.push_back(K);
-        St_.insert(St_.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);
-        TAU_.insert(TAU_.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);
+        St_.insert(St_.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);//一行30个S数据
+        TAU_.insert(TAU_.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);//一行31个TAU数据
         vd_.push_back(vol0);
         vd_.push_back(d);
         vd_.push_back(K);
         //cout<<in.size()<<endl;
     }
     
-    out.insert(out.end(),V_holder.begin()+window_size,V_holder.end());
+    cout<<S_holder[0]<<' '<<St_[0]<<endl;
+    
+    out.insert(out.end(),V_holder.begin()+window_size,V_holder.end());//windowsize is 30,then take the 31st element in the output; will have 222 days data
     
     /*========================================Get the general outcomes================================================*/
     double *data_ptr1=&in[0];
     double *data_ptr2=&out[0];
     
-    input=Eigen::Map<MatrixXd>(data_ptr1,window_size*2+4,periods-window_size);//rows means S,K,r,vol0,d,tau; cols means different days data
-    //inputs.resize(5, periods);
-    Option_val=Eigen::Map<VectorXd>(data_ptr2,periods-window_size);
+    input=Eigen::Map<MatrixXd>(data_ptr1,window_size*2+4,periods-window_size-1);//rows means S,K,r,vol0,d,tau; cols means different days data. 221days data，因为最后一天的没有明天的数据
+    
+    Option_val=Eigen::Map<VectorXd>(data_ptr2,periods-window_size);//222行
     
     /*=====================Get the specific outcomes S,TAU,vol and dividend, 3 matricies total========================*/
     double *S_ptr=&St_[0];
     double *TAU_ptr=&TAU_[0];
     double *VD_ptr=&vd_[0];
     
-    St=Eigen::Map<MatrixXd>(S_ptr,window_size,periods-window_size);
-    TAU=Eigen::Map<MatrixXd>(TAU_ptr,window_size+1,periods-window_size);
-    vol_d=Eigen::Map<MatrixXd>(VD_ptr,3,periods-window_size);
+    St=Eigen::Map<MatrixXd>(S_ptr,window_size,periods-window_size-1);
+    TAU=Eigen::Map<MatrixXd>(TAU_ptr,window_size+1,periods-window_size-1);
+    vol_d=Eigen::Map<MatrixXd>(VD_ptr,3,periods-window_size-1);
+    
+    double *V_whole=&V_holder[0];
+    
+    opt252=Eigen::Map<VectorXd>(V_whole,periods);//252行
     
 }
 
