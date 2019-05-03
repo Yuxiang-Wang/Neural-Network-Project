@@ -13,5 +13,7 @@ Two available topics:
 1. We settled on the first topic.
 2. Neural network training is being tested->Back_Propagation
 3. Need to add 30 days historical volatility as inputs to be simulated->simulation
-4. Need to add activation functions library->NeuronLayer_V0
-5. Exceptional handling for all the modules
+4. Exceptional handling for all the modules
+
+5/2/2019
+Template class versions almost done.
