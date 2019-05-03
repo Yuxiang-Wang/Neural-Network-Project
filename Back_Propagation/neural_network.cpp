@@ -101,7 +101,7 @@ void Neural_network::forward(MatrixXd input) {
 
 void Neural_network::backward(MatrixXd output) {
 	// delta
-	// exceptional handling for output layer and the second last layer
+	// exceptional handling for output layer
 	output = Map<MatrixXd>(output.data(), units_output, 1);
 	layers.back().delta = layers.back().val - output;
 	auto it = layers.rbegin() + 1;
@@ -109,7 +109,7 @@ void Neural_network::backward(MatrixXd output) {
 		(*it).val.array()*(MatrixXd::Ones(units_hidden + 1, 1) - (*it).val).array();
 
 	for (++it; it != layers.rend() - 1; ++it) {
-		(*it).delta = ((*it).w.transpose()*(*(it - 1)).delta.block(1, 0, units_hidden, 1)).array()*
+		(*it).delta = ((*it).w.transpose()*(*(it - 1)).delta.block(1,0,units_hidden,1)).array()*
 			(*it).val.array()*(MatrixXd::Ones(units_hidden + 1, 1) - (*it).val).array();
 	}
 
@@ -128,16 +128,16 @@ void Neural_network::backward(MatrixXd output) {
 	}
 }
 
-void Neural_network::update() {
+void Neural_network::update(const double& learning_rate) {
 	for (auto it = layers.begin(); it != layers.end() - 1; ++it) {
 		(*it).w -= learning_rate * (*it).diff_total;
 	}
 }
 
-void Neural_network::training(std::string file) {
+int Neural_network::training(const double& learning_rate, std::string file) {
 	int num = data_input.rows();
 
-	double cost = 1e5, cost_last;
+	double cost=1e5, cost_last, cost_init;
 	for (int ite = 0; ite < MAX_ITE; ++ite) {
 		for (auto it = layers.begin(); it != layers.end() - 1; ++it)
 			(*it).diff_total.setZero();
@@ -151,22 +151,35 @@ void Neural_network::training(std::string file) {
 				(*it).diff_total += (*it).diff;
 			cost += cost_func(data_output.row(i), layers.back().val);
 		}
-		//for (auto it = layers.begin(); it != layers.end() - 1; ++it)
-		//	(*it).diff_total /= num;
-		//cost /= num;
+		for (auto it = layers.begin(); it != layers.end() - 1; ++it)
+			(*it).diff_total /= num;
+		cost /= num;
 
-		// exit when change of cost funtion is small enough
-		if (abs(cost - cost_last) < 0.0001) {
-			std::cout << "\ntraining done, total iteration " << ite << '\n';
-			return;
+		// exit by checking value of derivative
+		/*
+		double max_diff = 0;
+		for (auto it = layers.begin(); it != layers.end() - 1; ++it) {
+			max_diff = (*it).diff_total.array().abs().maxCoeff() > max_diff ? (*it).diff_total.array().abs().maxCoeff() : max_diff;
 		}
-		update();
+		*/
+		
+		if (!ite)
+			cost_init = cost;
+		if (cost > 2 * cost_init) {
+			std::cout << "\ntraining rate too big\n";
+			return 0;
+		}
+		if (abs(cost-cost_last) < 0.0001) {
+			std::cout << "\ntraining done, total iteration " << ite << '\n';
+			return ite;
+		}
+		update(learning_rate);
 
-		// show training progress
-		// output to file for storing training results. 
+		// output for showing progress
+		// output to file for store training results. 
 		// don't need to re-train again incase slow converging for large scale data set
 		if (!(ite % 10)) {
-			std::cout << ite << ", " << "cost: " << cost << '\n';
+			std::cout << ite << ", "<<"cost: "<<cost<<" ... ";
 			if (file.length()) {
 				std::ofstream outfile(file);
 				if (outfile.fail()) {
