@@ -45,7 +45,7 @@ double BSM::normalCDF(const string &type){
         temp=0.5*(1+erf(this->d2()/sqrt(2)));
     }
     
-    return temp;//try handle
+    return temp;
 }
 
 double BSM::BSM_euro_call(){
@@ -126,11 +126,13 @@ void simulation::simulate(){
     
     for (int i=window_size+1; i<periods+1; ++i) {
         int j=i-window_size-1;
+        //for input matrix data
         in.insert(in.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);
         in.insert(in.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);
         in.push_back(vol0);
         in.push_back(d);
         in.push_back(K);
+        //different parts of the input data, as Yuxiang requested
         St_.insert(St_.end(),S_holder.begin()+j,S_holder.begin()+j+window_size);//一行30个S数据
         TAU_.insert(TAU_.end(),tau_holder.begin()+j,tau_holder.begin()+j+window_size+1);//一行31个TAU数据
         vd_.push_back(vol0);
@@ -139,7 +141,7 @@ void simulation::simulate(){
         //cout<<in.size()<<endl;
     }
     
-    cout<<S_holder[0]<<' '<<St_[0]<<endl;
+    //cout<<S_holder[0]<<' '<<St_[0]<<endl;
     
     out.insert(out.end(),V_holder.begin()+window_size,V_holder.end());//windowsize is 30,then take the 31st element in the output; will have 222 days data
     
@@ -147,9 +149,10 @@ void simulation::simulate(){
     double *data_ptr1=&in[0];
     double *data_ptr2=&out[0];
     
-    input=Eigen::Map<MatrixXd>(data_ptr1,window_size*2+4,periods-window_size-1);//rows means S,K,r,vol0,d,tau; cols means different days data. 221days data，因为最后一天的没有明天的数据
+    input=Eigen::Map<MatrixXd>(data_ptr1,window_size*2+4,periods-window_size);//rows means S,K,r,vol0,d,tau; cols means different days data. 221days data，因为最后一天的没有明天的数据
     
     Option_val=Eigen::Map<VectorXd>(data_ptr2,periods-window_size);//222行
+    
     
     /*=====================Get the specific outcomes S,TAU,vol and dividend, 3 matricies total========================*/
     double *S_ptr=&St_[0];

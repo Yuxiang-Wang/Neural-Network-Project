@@ -63,8 +63,8 @@ int main() {
     
     
     
-    
-    MatrixXd real_stock;
+    //below is just for processing the real data
+    /*MatrixXd real_stock;
     MatrixXd real_optionPrice;
     MatrixXd real_K;
     MatrixXd real_vol;
@@ -84,11 +84,11 @@ int main() {
     }
     
     double *d_ptr1=&in[0];
-    
+
     stock_out=Map<MatrixXd>(d_ptr1,30,221);
     writeIn(stock_out, "real_stock221.csv", csvFormat_mat);
     
-    
+    //
     matRead(real_optionPrice, "amzn_optionVal.csv");
     MatrixXd opt_out;
     vector<double>tempV;
@@ -103,6 +103,8 @@ int main() {
     
     opt_out=Map<VectorXd>(d_ptr2,222);
     writeIn(opt_out, "real_option222.csv", csvFormat_vec);
+   
+    //
     
     matRead(real_K, "amzn_K.csv");
     MatrixXd K_out;
@@ -147,6 +149,8 @@ int main() {
     double *sake_ptr=&sake[0];
     div=Map<VectorXd>(sake_ptr,221);
     writeIn(div, "real_div221.csv", csvFormat_vec);
+    
+    writeIn(div, "", csvFormat_vec);*/
     
     getchar();
     getchar();

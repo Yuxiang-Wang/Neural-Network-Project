@@ -58,7 +58,7 @@ class simulation{
     //simulation length size in years
     double simLen;
     //window size in days
-    int window_size;//cant be larger than simlen*252, exception handling here
+    int window_size;//cant be larger than simlen*252
     double seed_;
     double mean_;
     double stdev_;
@@ -66,14 +66,14 @@ class simulation{
     MatrixXd St;
     MatrixXd TAU;
     MatrixXd vol_d;
+    MatrixXd input;//
     VectorXd Option_val;
     
-    VectorXd opt252;
-    VectorXd S252;
-    VectorXd TAU252;
-    VectorXd VOL_D_K252;
+    VectorXd opt252;//1 year option price vector data
+    VectorXd S252;//stock vector data
+    VectorXd TAU252;//tau vector data
+    VectorXd VOL_D_K252;//vol,d,K vector data
     
-    MatrixXd input;
     
     simulation():Initial_set(BSM()),simLen{0},window_size{0},seed_{108},mean_{0},stdev_{1}{}
     //simulation(const BSM &A,const double &t,const int &win,const double &seed,const double &mean, const double &stdev):Initial_set{A},simLen{t},window_size{win},seed_{seed},mean_{mean},stdev_{stdev}{}
@@ -90,7 +90,6 @@ class simulation{
     const VectorXd getOpt() const {return Option_val;}
     const MatrixXd getInput() const {return input;}
     
-    //operator=
     friend ostream& operator << (ostream& os,  simulation& l);
     /*
      @brief overload the << to output the basic info of the object

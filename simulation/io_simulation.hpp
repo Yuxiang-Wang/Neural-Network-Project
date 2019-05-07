@@ -42,6 +42,9 @@ void writeIn(const MatrixBase<Derived> &mat,const string &filename,IOFormat &for
     
     try {
         file.open(filename);
+        if (file.fail()) {
+            throw myException1();
+        }
     } catch (myException1 e) {
         cout<<"Error: "<<e.what()<<endl;
     }

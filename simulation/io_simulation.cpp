@@ -28,7 +28,8 @@ int matRead(MatrixXd &A,const string &filename){
         while(getline(linestream, cell,',')){
             try {
                 stod(cell);
-            } catch (myException1 e) {
+            } catch (.../*myException3 e*/) {
+                myException3 e;
                 cout<<"Error: "<<e.what()<<endl;
                 return -1;
             }
