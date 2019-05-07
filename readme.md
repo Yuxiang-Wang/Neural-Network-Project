@@ -20,7 +20,6 @@ Template class versions almost done.
 
 5/3/2019
 Template class versions are done.
-template style loss functions need to be implemented.
 comments should probably be updated.
-need to test FFNN
+need to test FFNN with real data.
 Need to write the report.
